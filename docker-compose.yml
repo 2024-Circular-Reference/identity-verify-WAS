@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  holder:
+    build: ./BE/holder
+    ports:
+      - "8081:8081"
+
+  issuer:
+    build: ./BE/issuer
+    ports:
+      - "8082:8082"
+
+  verifier:
+    build: ./BE/verifier
+    ports:
+      - "8083:8083"
+
+  service:
+    build: ./BE/service
+    ports:
+      - "4000:4000"
