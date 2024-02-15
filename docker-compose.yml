@@ -2,20 +2,28 @@ version: "3.8"
 services:
   holder:
     build: ./BE/holder
+    image: holder:1.0.0
     ports:
       - "8081:8081"
+    container_name: holder-cont
 
   issuer:
     build: ./BE/issuer
+    image: issuer:1.0.0
     ports:
       - "8082:8082"
+    container_name: issuer-cont
 
   verifier:
     build: ./BE/verifier
+    image: verifier:1.0.0
     ports:
       - "8083:8083"
+    container_name: verifier-cont
 
   service:
     build: ./BE/service
+    image: service:1.0.0
     ports:
       - "4000:4000"
+    container_name: service-cont
