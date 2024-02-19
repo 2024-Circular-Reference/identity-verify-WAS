@@ -26,4 +26,5 @@ jobs:
           password: ${{secrets.DOCKERHUB_PASSWORD}}
 
       - name: push
-        run: docker push edac99/image-repo:${{ matrix.image-tag-name }}
+        run: |
+          docker push edac99/image-repo:${{ matrix.image-tag-name }}
