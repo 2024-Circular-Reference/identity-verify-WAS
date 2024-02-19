@@ -15,16 +15,14 @@ jobs:
         image-tag-name: ["holder-1.0.0", "issuer-1.0.0", "verifier-1.0.0", "service-1.0.0"]
 
     steps:
-      - name: build
-        uses: actions/checkout@v3
-        run: docker-compose -f docker-compose.push.yml build
-
       - name: DockerHub login
         uses: docker/login-action@v2.0.0
         with:
           username: ${{secrets.DOCKERHUB_USERNAME}}
           password: ${{secrets.DOCKERHUB_PASSWORD}}
 
-      - name: push
+      - name: build & push
+        uses: actions/checkout@v3
         run: |
+          docker-compose -f docker-compose.push.yml build
           docker push edac99/image-repo:${{ matrix.image-tag-name }}
