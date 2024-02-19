@@ -1,0 +1,23 @@
+name: Test CI (Service API)
+
+on:
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Node 20.11 설치
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20.11"
+
+      - name: 모듈 설치
+        run: cd ./BE/service && npm i
+
+      - name: 테스트 실행
+        run: cd ./BE/service && npm run test
