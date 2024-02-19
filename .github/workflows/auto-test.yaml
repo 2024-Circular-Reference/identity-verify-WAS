@@ -1,23 +1,24 @@
-name: Test CI (Service API)
+name: Auto Test (Service API only)
 
 on:
   pull_request:
     branches: [main, dev]
 
 jobs:
-  test:
+  auto-test:
+    name: Run test codes
     runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Node 20.11 설치
+      - name: Install Node 20.11
         uses: actions/setup-node@v2
         with:
           node-version: "20.11"
 
-      - name: 모듈 설치
+      - name: Install dependancy
         run: cd ./BE/service && npm i
 
-      - name: 테스트 실행
+      - name: Run test (Service API only)
         run: cd ./BE/service && npm run test

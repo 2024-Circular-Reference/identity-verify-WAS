@@ -1,0 +1,53 @@
+name: Docker 배포
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  build-push:
+    name: Docker build & push
+    runs-on: ubuntu-20.04
+
+    if: github.event.pull_request.merged == true
+
+    strategy:
+      matrix:
+        image-tag-name: ["holder-1.0.0", "issuer-1.0.0", "verifier-1.0.0", "service-1.0.0"]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: DockerHub login
+        uses: docker/login-action@v2.0.0
+        with:
+          username: ${{secrets.DOCKERHUB_USERNAME}}
+          password: ${{secrets.DOCKERHUB_PASSWORD}}
+
+      - name: build & push
+        run: |
+          docker-compose -f docker-compose.push.yml build
+          docker push edac99/image-repo:${{ matrix.image-tag-name }}
+
+  server-pull:
+    name: Pull from server
+    runs-on: ubuntu-20.04
+
+    if: github.event.pull_request.merged == true
+
+    steps:
+      - name: pull
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_ADMIN_NAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+            docker stop $(docker ps -aq)
+            docker rm $(docker ps -aq)
+            docker rmi $(docker ps -aq)
+            cd ${{ secrets.REPO_DIR }}
+            docker-compose -f docker-compose.pull.yml up -d
