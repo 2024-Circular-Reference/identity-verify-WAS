@@ -27,3 +27,22 @@ jobs:
         run: |
           docker-compose -f docker-compose.push.yml build
           docker push edac99/image-repo:${{ matrix.image-tag-name }}
+
+  server-pull:
+    name: Pull from server
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: pull
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_ADMIN_NAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+            docker stop $(docker ps -aq)
+            docker rm $(docker ps -aq)
+            docker rmi $(docker ps -aq)
+            cd ${{ secrets.REPO_DIR }}
+            docker-compose -f docker-compose.pull.yml up -d
