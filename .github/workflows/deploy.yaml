@@ -1,0 +1,34 @@
+name: Docker 배포
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: SSH 설정
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: 배포 스크립트 실행
+        run: |
+          chmod +x ./push-to-hub.sh
+          sh ./push-to-hub.sh
+        env:
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: 서버 접속 후 스크립트 실행
+        run: |
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} << 'EOF'
+          cd ${{ secrets.SERVER_DIR }}
+          sh ./pull-from-hub.sh
+          EOF
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
