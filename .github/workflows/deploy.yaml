@@ -12,17 +12,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: SSH 설정
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
       - name: 배포 스크립트 실행
         run: |
           chmod +x ./push-to-hub.sh
           sh ./push-to-hub.sh
         env:
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: SSH 설정
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: 서버 접속 후 스크립트 실행
         run: |
