@@ -1,11 +1,9 @@
 #!/bin/bash
 
-USER_NAME=edac99
-PASSWORD=단하나뿐인비밀번호야
-HUB_REPOSITORY_NAME=image-repo
+DOCKER_HUB_PASSWORD=$DOCKER_HUB_PASSWORD
 
 echo "Docker Hub에 로그인..."
-echo "$PASSWORD" | docker login --username "$USER_NAME" --password-stdin
+echo "$DOCKER_HUB_PASSWORD" | docker login --username "edac99" --password-stdin
 
 if [ $? -ne 0 ]; then
     echo "로그인 실패"

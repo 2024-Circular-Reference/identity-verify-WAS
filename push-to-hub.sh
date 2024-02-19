@@ -1,8 +1,6 @@
 #!/bin/bash
 
-USER_NAME=edac99
-PASSWORD=단하나뿐인비밀번호야
-HUB_REPOSITORY_NAME=image-repo
+DOCKER_HUB_PASSWORD=$DOCKER_HUB_PASSWORD
 
 declare -A images=(
   ["holder"]="holder-1.0.0"
@@ -12,7 +10,7 @@ declare -A images=(
 )
 
 echo "Docker Hub에 로그인..."
-echo "$PASSWORD" | docker login --username "$USER_NAME" --password-stdin
+echo "$DOCKER_HUB_PASSWORD" | docker login --username "edac99" --password-stdin
 
 if [ $? -ne 0 ]; then
     echo "로그인 실패"
@@ -25,7 +23,7 @@ docker-compose -f docker-compose.push.yml build
 for name in "${!images[@]}"; do
   tag=${images[$name]}
   echo "Docker Hub에 $tag 배포..."
-  docker push "$USER_NAME/$HUB_REPOSITORY_NAME:$tag"
+  docker push "edac99/image-repo:$tag"
 done
 
 echo "완료!"
