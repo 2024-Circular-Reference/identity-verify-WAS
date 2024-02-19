@@ -2,13 +2,16 @@ name: Docker 배포
 
 on:
   pull_request:
+    types: [closed]
     branches:
-      - dev
+      - main
 
 jobs:
   build-push:
     name: Docker build & push
     runs-on: ubuntu-20.04
+
+    if: github.event.pull_request.merged == true
 
     strategy:
       matrix:
@@ -31,6 +34,8 @@ jobs:
   server-pull:
     name: Pull from server
     runs-on: ubuntu-20.04
+
+    if: github.event.pull_request.merged == true
 
     steps:
       - name: pull
