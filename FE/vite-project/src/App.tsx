@@ -5,7 +5,7 @@ import "./App.css";
 function App() {
   async function fetchData() {
     try {
-      const response = await fetch("http://localhost:4000/app");
+      const response = await fetch("http://localhost:4000/hello");
       console.log(response);
     } catch (error) {
       console.error(error);

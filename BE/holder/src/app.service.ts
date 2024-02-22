@@ -11,7 +11,7 @@ export class AppService {
   }
 
   async getHelloFromIssuer(): Promise<string> {
-    const url = 'http://localhost:8082/hello';
+    const url = 'http://issuer:8082/hello';
     return this.httpService
       .get(url)
       .pipe(map((response) => response.data))

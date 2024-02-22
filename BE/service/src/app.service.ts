@@ -11,7 +11,7 @@ export class AppService {
   }
 
   async getHelloFromVerifier(): Promise<string> {
-    const url = 'http://localhost:8083/hello';
+    const url = 'http://verifier:8083/hello';
     return this.httpService
       .get(url)
       .pipe(map((response) => response.data))

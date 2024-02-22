@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+  holder:
+    build: ./BE/holder
+    image: holder
+    ports:
+      - "8081:8081"
+
+  issuer:
+    build: ./BE/issuer
+    image: issuer
+    ports:
+      - "8082:8082"
+
+  verifier:
+    build: ./BE/verifier
+    image: verifier
+    ports:
+      - "8083:8083"
+
+  service:
+    build: ./BE/service
+    image: service
+    ports:
+      - "4000:4000"
