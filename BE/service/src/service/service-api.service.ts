@@ -18,7 +18,7 @@ export class ServiceAPIService {
   }
 
   async verifyProof(dto: ProofDto): Promise<boolean> {
-    const url = 'http://issuer:8083/api/verifier/verify-proof';
+    const url = 'http://verifier:8083/api/verifier/verify-proof';
     return lastValueFrom(
       this.httpService
         .get(url, { params: { ...dto } })
