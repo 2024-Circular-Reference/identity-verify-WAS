@@ -1,11 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AppService } from './app.service';
-import { AppController } from './app.controller';
-import { HttpModule } from '@nestjs/axios';
+import { HolderAPIModule } from './holder/holder-api.module';
 
 @Module({
-  imports: [HttpModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [HolderAPIModule],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
