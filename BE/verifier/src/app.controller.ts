@@ -8,9 +8,4 @@ export class AppController {
   getHello(): string {
     return this.appService.sayHello();
   }
-
-  @Get('/to-verifier')
-  async getHelloFromVerifier(): Promise<string> {
-    return 'From Verifier: ' + (await this.appService.getHelloFromVerifier());
-  }
 }

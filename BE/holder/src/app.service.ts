@@ -7,11 +7,11 @@ export class AppService {
   constructor(private httpService: HttpService) {}
 
   sayHello(): string {
-    return 'Hello? This is Service Server.';
+    return 'Hello? This is Holder Server.';
   }
 
-  async getHelloFromVerifier(): Promise<string> {
-    const url = 'http://verifier:8083/hello';
+  async getHelloFromIssuer(): Promise<string> {
+    const url = 'http://issuer:8082/hello';
     return this.httpService
       .get(url)
       .pipe(map((response) => response.data))
