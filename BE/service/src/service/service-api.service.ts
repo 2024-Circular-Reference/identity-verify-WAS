@@ -7,16 +7,6 @@ import { HttpService } from '@nestjs/axios';
 export class ServiceAPIService {
   constructor(private httpService: HttpService) {}
 
-  async serveNearCredit(): Promise<any> {
-    const response = await this.getCreditToNear();
-    return response;
-  }
-
-  async getCreditToNear(): Promise<any> {
-    // TODO: Some block chain code snippet
-    return 'some credit';
-  }
-
   async verifyProof(dto: ProofDto): Promise<boolean> {
     const url = 'http://verifier:8083/api/verifier/verify-proof';
     return lastValueFrom(
