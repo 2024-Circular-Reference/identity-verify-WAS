@@ -15,10 +15,10 @@ export class HolderAPIService {
   }
 
   async createUserVC(dto: UserVCDto): Promise<any> {
-    const url = 'http://issuer:8082/api/holder/create-vc';
+    const url = 'http://issuer:8082/api/issuer/create-vc';
     return lastValueFrom(
       this.httpService
-        .get(url, { params: dto })
+        .get(url, { params: { ...dto } })
         .pipe(map((response) => response.data)),
     );
   }
