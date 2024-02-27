@@ -6,4 +6,4 @@ import { VerifierAPIModule } from './verifier/verifier-api.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class VerifierAppModule {}

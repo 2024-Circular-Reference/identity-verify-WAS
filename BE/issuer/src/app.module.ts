@@ -6,4 +6,4 @@ import { IssuerAPIModule } from './issuer/issuer-api.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class IssuerAppModule {}

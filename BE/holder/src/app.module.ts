@@ -6,4 +6,4 @@ import { HolderAPIModule } from './holder/holder-api.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class HolderAppModule {}
