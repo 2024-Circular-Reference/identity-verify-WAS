@@ -8,9 +8,6 @@ jobs:
   auto-test:
     name: Run test codes
     runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        directory: ["holder", "issuer", "verifier", "service"]
 
     steps:
       - uses: actions/checkout@v3
@@ -24,4 +21,4 @@ jobs:
         run: cd ./BE/holder && npm i
 
       - name: Run test
-        run: npm run test
+        run: cd ./BE/holder && npm run test
