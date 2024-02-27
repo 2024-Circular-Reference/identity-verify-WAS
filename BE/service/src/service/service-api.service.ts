@@ -11,16 +11,6 @@ export class ServiceAPIService {
     private readonly configService: ConfigService,
   ) {}
 
-  async serveNearCredit(): Promise<any> {
-    const response = await this.getCreditToNear();
-    return response;
-  }
-
-  async getCreditToNear(): Promise<any> {
-    // TODO: Some block chain code snippet
-    return 'some credit';
-  }
-
   async verifyProof(dto: ProofDto): Promise<boolean> {
     const url = this.configService.get<string>('API_VERIFY_PROOF');
     return lastValueFrom(
