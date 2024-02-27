@@ -8,6 +8,9 @@ jobs:
   auto-test:
     name: Run test codes
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        directory: ["holder", "issuer", "verifier", "service"]
 
     steps:
       - uses: actions/checkout@v3
@@ -17,12 +20,11 @@ jobs:
         with:
           node-version: "20.11"
 
-      - name: Docker Compose Up
-        uses: isbang/compose-action@v1.5.1
-        with:
-          compose-file: "./docker-compose.dev.yml"
+      - name: Install dependencies
+        run: cd ./BE/${{ matrix.directory }} && npm i
 
-      - name: Run test
-        run: |
-          cd ./BE/holder && npm run test
-          cd ./BE/service && npm run test
+      - name: Run Server
+        run: cd ./BE/${{ matrix.directory }} && npm run start:dev
+
+      - name: Run test (Service API only)
+        run: cd ./BE/service && npm run test
