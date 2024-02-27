@@ -23,8 +23,7 @@ jobs:
       - name: Install dependencies
         run: cd ./BE/${{ matrix.directory }} && npm i
 
-      - name: Run Server
-        run: cd ./BE/${{ matrix.directory }} && npm run start:dev
-
-      - name: Run test (Service API only)
-        run: cd ./BE/service && npm run test
+      - name: Run test
+        run: |
+          cd ./BE/holder && npm run test
+          cd ./BE/service && npm run test
