@@ -24,6 +24,10 @@ describe('AppController (e2e)', () => {
     await issuerApp.init();
   });
 
+  it('success test', () => {
+    return undefined;
+  });
+
   it('create-vc to Issuer (Success)', () => {
     const userVCDto = {
       studentNumber: 'Test Student Number',

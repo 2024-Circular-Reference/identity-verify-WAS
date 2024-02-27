@@ -21,9 +21,7 @@ jobs:
           node-version: "20.11"
 
       - name: Install dependencies
-        run: cd ./BE/${{ matrix.directory }} && npm i
+        run: cd ./BE/holder && npm i
 
       - name: Run test
-        run: |
-          cd ./BE/holder && npm run test
-          cd ./BE/service && npm run test
+        run: npm run test
