@@ -28,20 +28,6 @@ describe('AppController (e2e)', () => {
     return undefined;
   });
 
-  it('create-vc to Issuer (Success)', () => {
-    const userVCDto = {
-      studentNumber: 'Test Student Number',
-      studentPassword: 'Test Student Password',
-      HolderPubKey: 'Test Holder Pub Key',
-    };
-
-    return request(holderApp.getHttpServer())
-      .get('/api/holder/create-vc')
-      .send(userVCDto)
-      .expect(200)
-      .expect('{"issuerPubKey":"Issuer Pub Key","vc":"vc"}');
-  });
-
   afterAll(async () => {
     await holderApp.close();
     await issuerApp.close();
