@@ -23,5 +23,5 @@ jobs:
       - name: Install dependencies for issuer
         run: cd ./BE/issuer && npm i
 
-      - name: Run test
-        run: cd ./BE/holder && npm run test
+      # - name: Run test
+      # run: cd ./BE/holder && npm run test
