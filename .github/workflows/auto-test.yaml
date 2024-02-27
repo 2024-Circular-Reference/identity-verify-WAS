@@ -20,7 +20,7 @@ jobs:
       - name: Docker Compose Up
         uses: isbang/compose-action@v1.5.1
         with:
-          compose-file: "../../docker-compose.dev.yml"
+          compose-file: "../docker-compose.dev.yml"
 
       - name: Run test
         run: |
