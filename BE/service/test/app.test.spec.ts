@@ -1,28 +1,46 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
+import { ServiceAppModule } from '../src/app.module';
+import { VerifierAppModule } from './../../verifier/src/app.module';
 
 describe('AppController (e2e)', () => {
-  let app: INestApplication;
+  let serviceApp: INestApplication;
+  let verifierApp: INestApplication;
 
   beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+    const serviceModuleFixture: TestingModule = await Test.createTestingModule({
+      imports: [ServiceAppModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
+    const verifierModuleFixture: TestingModule = await Test.createTestingModule(
+      {
+        imports: [VerifierAppModule],
+      },
+    ).compile();
+
+    serviceApp = serviceModuleFixture.createNestApplication();
+    verifierApp = verifierModuleFixture.createNestApplication();
+
+    await serviceApp.init();
+    await verifierApp.init();
   });
 
-  it('/app (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/app')
+  it('verify-proof to Verifier (Success)', () => {
+    const proofDto = {
+      HolderPubKey: 'Test Holder Pub Key',
+      proof: 'Test Proof',
+    };
+
+    return request(serviceApp.getHttpServer())
+      .get('/api/service/verify-proof')
+      .send(proofDto)
       .expect(200)
-      .expect('Hello?');
+      .expect('true');
   });
 
   afterAll(async () => {
-    await app.close();
+    await serviceApp.close();
+    await verifierApp.close();
   });
 });
