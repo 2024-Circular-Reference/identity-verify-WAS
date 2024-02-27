@@ -1,11 +1,19 @@
 import { Module } from '@nestjs/common';
-import { AppService } from './app.service';
-import { AppController } from './app.controller';
-import { HttpModule } from '@nestjs/axios';
+import { ServiceAPIModule } from './service/service-api.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [HttpModule],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ServiceAPIModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath:
+        process.env.NODE_ENV === 'test'
+          ? './src/config/.test.env'
+          : './src/config/.launch.env',
+    }),
+  ],
+  controllers: [],
+  providers: [],
 })
-export class AppModule {}
+export class ServiceAppModule {}
