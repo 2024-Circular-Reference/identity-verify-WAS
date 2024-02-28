@@ -39,7 +39,7 @@ export class IssuerAPIService {
     const contract = await connectToNEARContract();
 
     // { Issuer Pub Key : Hash(VC) } 적재
-    const hashVC = await bcrypt.hash(JSON.stringify(vc), 10);
+    const hashVC = await bcrypt.hash(vc, 10);
     await (contract as NEARContract).load_hashed_vc({
       issuer_did: `did:near:${issuerPubKey}`,
       hashed_vc: hashVC,
