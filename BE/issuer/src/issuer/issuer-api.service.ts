@@ -34,7 +34,7 @@ export class IssuerAPIService {
     return;
   }
 
-  async loadKeyChain(vc: string): Promise<boolean> {
+  async loadKeyChain(vc: string) {
     const issuerPubKey = await this.getIssuerPubKey();
     const contract = await connectToNEARContract();
 
@@ -51,7 +51,7 @@ export class IssuerAPIService {
     });
 
     console.log(`[+] hashed VCs from issuer '${issuerPubKey}': ${response}`);
-    return true;
+    return;
   }
 
   async getIssuerPubKey() {

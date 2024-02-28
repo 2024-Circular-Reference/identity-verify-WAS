@@ -1,11 +1,14 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseFilters } from '@nestjs/common';
 import { ServiceAPIService } from './service-api.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProofDto } from '../dto/proof.dto';
 import { UserVCDto } from '../dto/user-vc.dto';
+import { CustomExceptionFilter } from '../filter/exception.filter';
+import { CustomErrorException } from '../filter/custom-error.exception';
 
 @Controller('api/service')
 @ApiTags('SERVICE API')
+@UseFilters(CustomExceptionFilter)
 export class ServiceAPIController {
   constructor(private readonly serviceAPIService: ServiceAPIService) {}
 
@@ -23,7 +26,11 @@ export class ServiceAPIController {
     summary: 'Issuer가 생성한 Holder VC를 DB에 저장',
   })
   async saveUserVC(@Body() dto: UserVCDto) {
-    const { uuid, vc } = dto;
-    return await this.serviceAPIService.saveUserVC(uuid, vc);
+    try {
+      const { uuid, vc } = dto;
+      return await this.serviceAPIService.saveUserVC(uuid, vc);
+    } catch (error) {
+      throw new CustomErrorException('VC Save Failed', 500);
+    }
   }
 }

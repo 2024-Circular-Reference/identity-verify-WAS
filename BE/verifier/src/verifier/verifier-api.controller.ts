@@ -1,10 +1,12 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseFilters } from '@nestjs/common';
 import { VerifierAPIService } from './verifier-api.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProofDto } from '../dto/proof.dto';
+import { CustomExceptionFilter } from '../filter/exception.filter';
 
 @Controller('api/verifier')
 @ApiTags('VERIFIER API')
+@UseFilters(CustomExceptionFilter)
 export class VerifierAPIController {
   constructor(private readonly verifierAPIService: VerifierAPIService) {}
 

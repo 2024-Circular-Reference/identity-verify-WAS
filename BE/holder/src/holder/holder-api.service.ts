@@ -22,7 +22,7 @@ export class HolderAPIService {
   }
 
   // Issuer 호출
-  async createUserVC(dto: UserVCDto, stMajorCode: string): Promise<any> {
+  async createUserVC(dto: UserVCDto, stMajorCode: string) {
     const { holderPubKey } = dto;
     const url = this.configService.get<string>('API_CREATE_USER_VC');
     return lastValueFrom(

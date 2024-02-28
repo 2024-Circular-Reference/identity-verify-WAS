@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { HolderAppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { TransformInterceptor } from './interceptor/response.interceptor';
 import { CustomExceptionFilter } from './filter/exception.filter';
 
 async function bootstrap() {
@@ -18,7 +17,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document);
 
-  app.useGlobalInterceptors(new TransformInterceptor());
   app.useGlobalFilters(new CustomExceptionFilter());
 
   await app.listen(8081);
