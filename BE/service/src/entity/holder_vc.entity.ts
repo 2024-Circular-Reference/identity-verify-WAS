@@ -2,9 +2,9 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: 'holder_vc' })
 export class HolderVCEntity {
-  @PrimaryColumn()
+  @PrimaryColumn({ type: 'varchar', length: 64 })
   did!: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 512 })
   vc!: string;
 }

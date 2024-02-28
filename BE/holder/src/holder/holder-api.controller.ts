@@ -13,14 +13,10 @@ export class HolderAPIController {
     summary: '사용자 유효성 검증 후 VC 생성',
   })
   async createUserVC(@Query() dto: UserVCDto): Promise<any> {
-    const { stNum, stPwd, holderPubKey } = dto;
-    const stMajorCode: string = await this.holderAPIService.getUserMajor(
-      stNum,
-      stPwd,
-    );
+    const stMajorCode: string = await this.holderAPIService.getUserMajor(dto);
     if (!stMajorCode) {
       return 'User Not Exist';
     }
-    return await this.holderAPIService.createUserVC(stMajorCode, holderPubKey);
+    return await this.holderAPIService.createUserVC(dto, stMajorCode);
   }
 }
