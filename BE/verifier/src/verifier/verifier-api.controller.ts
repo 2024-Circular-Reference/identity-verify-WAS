@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { VerifierAPIService } from './verifier-api.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ProofDto } from './proof.dto';
+import { ProofDto } from '../dto/proof.dto';
 
 @Controller('api/verifier')
 @ApiTags('VERIFIER API')
