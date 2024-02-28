@@ -13,7 +13,11 @@ export class IssuerAPIController {
     summary: '사용자 VC 생성 후 블록체인에 키체인 적재',
   })
   async createUserVC(@Query() dto: UserVCDto): Promise<any> {
-    const vc = await this.issuerAPIService.createUserVC(dto);
+    const { stMajorCode, holderPubKey } = dto;
+    const vc = await this.issuerAPIService.createUserVC(
+      stMajorCode,
+      holderPubKey,
+    );
     const isLoadSuccess = await this.issuerAPIService.loadKeyChain(vc);
     if (!isLoadSuccess) {
       return 'Block Chain Load Failed';
