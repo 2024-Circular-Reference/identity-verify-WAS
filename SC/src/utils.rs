@@ -32,6 +32,15 @@ impl DidContract {
         self.map_holder_did_to_issuer_did.get(&holder_did).unwrap()
     }
 
+    pub fn get_mapped_holder_did_validity(
+        &self,
+        holder_did: HolderDID,
+    ) -> bool {
+        match self.map_holder_did_to_validity.get(&holder_did) {
+            Some(v) => v,
+            None => false,
+        }
+    }
 }
 
 pub fn convert_account_id_to_did(near_named_account: AccountId) -> DID {

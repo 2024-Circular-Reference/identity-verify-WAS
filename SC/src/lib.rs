@@ -8,9 +8,11 @@ mod utils;
 mod vc;
 
 use did_document::*;
-use vc::HashedVC;
 use std::collections::HashSet;
 use utils::convert_account_id_to_did;
+use vc::HashedVC;
+
+pub type Validity = bool;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize)]
@@ -25,10 +27,14 @@ struct DidContract {
     pub set_issuer_did: UnorderedSet<IssuerDID>,
 
     // Mapping: Issuer DID --> Vec<HashedVc>
-    pub map_issuer_did_to_hashed_vcs: UnorderedMap<IssuerDID, HashSet<HashedVC>>,
+    pub map_issuer_did_to_hashed_vcs:
+        UnorderedMap<IssuerDID, HashSet<HashedVC>>,
 
     // Mapping: Holder DID --> Issuer DID
-    pub map_holder_did_to_issuer_did: UnorderedMap<HolderDID, IssuerDID>
+    pub map_holder_did_to_issuer_did: UnorderedMap<HolderDID, IssuerDID>,
+
+    // Mapping: Holder DID --> Issuer DID
+    pub map_holder_did_to_validity: UnorderedMap<HolderDID, Validity>,
 }
 
 impl Default for DidContract {
@@ -39,6 +45,7 @@ impl Default for DidContract {
             set_issuer_did: UnorderedSet::new(b"s"),
             map_issuer_did_to_hashed_vcs: UnorderedMap::new(b"h"),
             map_holder_did_to_issuer_did: UnorderedMap::new(b"v"),
+            map_holder_did_to_validity: UnorderedMap::new(b"y"),
         }
     }
 }
@@ -49,14 +56,15 @@ impl DidContract {
     pub fn reg_did_using_account(&mut self, is_issuer: bool) {
         let near_named_account: AccountId = env::predecessor_account_id();
 
-        let did: String = match self.map_account_to_did.get(&near_named_account) {
+        let did: String = match self.map_account_to_did.get(&near_named_account)
+        {
             Some(did) => {
                 log!("already registered!, did: {:?}", did);
                 did
             }
             None => {
                 // registering...
-                let did: String = format!("did:near:{}",near_named_account);
+                let did: String = format!("did:near:{}", near_named_account);
 
                 log!("registered new did!: {:?}", did);
 
@@ -104,7 +112,8 @@ impl DidContract {
             let deposit: Balance = env::attached_deposit();
 
             if deposit >= 5 * NEAR {
-                let did = convert_account_id_to_did(env::predecessor_account_id());
+                let did =
+                    convert_account_id_to_did(env::predecessor_account_id());
                 self.set_issuer_did.insert(&did);
             } else {
                 env::panic_str("Not enough deposit NEAR")
@@ -112,16 +121,39 @@ impl DidContract {
         }
     }
 
-    pub fn load_holder_did_issuer_did_mapping(&mut self, holder_did: HolderDID, issuer_did: IssuerDID) {
+    pub fn load_holder_did_issuer_did_mapping(
+        &mut self,
+        holder_did: HolderDID,
+        issuer_did: IssuerDID,
+    ) {
         // issuer_did validity check
         if self.set_issuer_did.contains(&issuer_did) {
             // holder_did validity check
             log!(format!("did_list: {:?}", self.get_total_did()));
 
-            if self.map_account_to_did.values().collect::<Vec<String>>().contains(&holder_did) {
-                self.map_holder_did_to_issuer_did.insert(&holder_did, &issuer_did);
+            if self
+                .map_account_to_did
+                .values()
+                .collect::<Vec<String>>()
+                .contains(&holder_did)
+            {
+                self.map_holder_did_to_issuer_did
+                    .insert(&holder_did, &issuer_did);
             }
         }
     }
 
+    pub fn load_holder_did_validity_mapping(
+        &mut self,
+        holder_did: HolderDID,
+        validity: bool,
+    ) {
+        // TODO maybe need more logic to check the validity
+        if self.get_total_did().contains(&holder_did) {
+            log!("good");
+
+            self.map_holder_did_to_validity
+                .insert(&holder_did, &validity);
+        }
+    }
 }
