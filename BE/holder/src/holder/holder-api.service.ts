@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { map } from 'rxjs/operators';
 import { lastValueFrom } from 'rxjs';
-import { UserVCDto } from './user-vc.dto';
+import { UserVCDto } from '../dto/user-vc.dto';
 
 @Injectable()
 export class HolderAPIService {

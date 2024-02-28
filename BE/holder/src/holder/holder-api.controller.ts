@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { HolderAPIService } from './holder-api.service';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { UserVCDto } from './user-vc.dto';
+import { UserVCDto } from '../dto/user-vc.dto';
 
 @Controller('api/holder')
 @ApiTags('HOLDER API')
