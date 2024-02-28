@@ -19,6 +19,7 @@ export class IssuerAPIService {
   }
 
   async getIssuerPubKey() {
+    // TODO: DB에서 Issuer Pub Key 가져와서 반환
     return 'Issuer Pub Key';
   }
 }

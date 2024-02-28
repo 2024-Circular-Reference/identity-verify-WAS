@@ -8,12 +8,12 @@ export function createVC(
     context: ['https://www.w3.org/ns/credentials/v2'],
     id: `url:uuid:${uuid}`,
     credential_type: ['VerifiableCredential', 'MajorCredential'],
-    issuer: 'pnu.testnet',
+    issuer: 'did:near:pnu.testnet',
     validFrom: timeStamp,
     credentialSubject: {
-      id: `${holderPubKey}.testnet`,
+      id: `did:near:${holderPubKey}.testnet`,
       subject: {
-        school_did: 'pnu.testnet',
+        school_did: 'did:near:pnu.testnet',
         major: stMajorCode,
       },
     },
