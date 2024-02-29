@@ -33,4 +33,17 @@ export class ServiceAPIController {
       throw new CustomErrorException('VC Save Failed', 500);
     }
   }
+
+  //! Init API
+  @Post('init-mock')
+  @ApiOperation({
+    summary: 'student 테이블의 데이터 mocking',
+  })
+  async initMock() {
+    try {
+      return await this.serviceAPIService.initMock();
+    } catch (error) {
+      throw new CustomErrorException('Init Mock Failed', 500);
+    }
+  }
 }
