@@ -14,7 +14,7 @@ export class IssuerAPIController {
   // Holder에서 호출
   @Get('/create-vc')
   @ApiOperation({
-    summary: '사용자 VC 생성 후 블록체인에 키체인 적재',
+    summary: 'HOLDER 호출) 사용자 VC 생성 후 블록체인에 키체인 적재',
   })
   async createUserVC(@Query() dto: UserVCDto) {
     const { uuid, vc } = this.issuerAPIService.createUserVC(dto);
