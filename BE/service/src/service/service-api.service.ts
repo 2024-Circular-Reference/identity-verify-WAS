@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { StudentEntity } from 'src/entity/student.entity';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { UserInfoDto } from 'src/dto/user-info.dto';
 
 @Injectable()
 export class ServiceAPIService {
@@ -21,11 +22,6 @@ export class ServiceAPIService {
     private readonly configService: ConfigService,
   ) {}
 
-  async saveUserVC(uuid: string, vc: string) {
-    await this.holderVCRepository.save({ did: uuid, vc });
-    return;
-  }
-
   // Verfier API 호출
   async verifyProof(dto: ProofDto): Promise<boolean> {
     const url = this.configService.get<string>('API_VERIFY_PROOF');
@@ -34,6 +30,20 @@ export class ServiceAPIService {
         .get(url, { params: { ...dto } })
         .pipe(map((response) => response.data)),
     );
+  }
+
+  async getUserMajor(dto: UserInfoDto): Promise<StudentEntity> {
+    const { stNum, stPwd } = dto;
+    return await this.studentRepository
+      .createQueryBuilder('student')
+      .where('student.number = :stNum', { stNum })
+      .andWhere('student.password = :stPwd', { stPwd })
+      .getOne();
+  }
+
+  async saveUserVC(uuid: string, vc: string) {
+    await this.holderVCRepository.save({ did: uuid, vc });
+    return;
   }
 
   // config 폴더의 mock data를 DB에 삽입
