@@ -6,12 +6,17 @@ import { HttpService } from '@nestjs/axios';
 import { HolderVCEntity } from '../entity/holder_vc.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { StudentEntity } from 'src/entity/student.entity';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 @Injectable()
 export class ServiceAPIService {
   constructor(
     @InjectRepository(HolderVCEntity)
     private holderVCRepository: Repository<HolderVCEntity>,
+    @InjectRepository(StudentEntity)
+    private studentRepository: Repository<StudentEntity>,
     private httpService: HttpService,
     private readonly configService: ConfigService,
   ) {}
@@ -29,5 +34,20 @@ export class ServiceAPIService {
         .get(url, { params: { ...dto } })
         .pipe(map((response) => response.data)),
     );
+  }
+
+  // config 폴더의 mock data를 DB에 삽입
+  async initMock() {
+    const filePath = path.join(process.cwd(), './src/config/student.data.txt');
+    const fileContent = await fs.readFile(filePath, 'utf8');
+    const lines = fileContent.split('\n');
+    lines.map(async (line) => {
+      const [number, password, major_code] = line.split(' ');
+      await this.studentRepository.save({
+        number,
+        password,
+        major_code,
+      });
+    });
   }
 }
