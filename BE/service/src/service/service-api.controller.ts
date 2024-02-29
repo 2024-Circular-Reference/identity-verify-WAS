@@ -24,7 +24,7 @@ export class ServiceAPIController {
   // Holder에서 호출
   @Get('get-major')
   @ApiOperation({
-    summary: '학생 정보로 전공 코드를 반환',
+    summary: 'HOLDER 호출) 학생 정보로 전공 코드를 반환',
   })
   async getUserMajot(@Query() dto: UserInfoDto): Promise<string> {
     const res = await this.serviceAPIService.getUserMajor(dto);
@@ -37,7 +37,7 @@ export class ServiceAPIController {
   // Issuer에서 호출
   @Post('save-vc')
   @ApiOperation({
-    summary: 'Issuer가 생성한 Holder VC를 DB에 저장',
+    summary: 'ISSUER 호출) Issuer가 생성한 Holder VC를 DB에 저장',
   })
   async saveUserVC(@Body() dto: UserVCDto) {
     try {
@@ -51,7 +51,7 @@ export class ServiceAPIController {
   //! Init API
   @Post('init-mock')
   @ApiOperation({
-    summary: 'student 테이블의 데이터 mocking',
+    summary: 'INIT 주의) student 테이블의 데이터 mocking',
   })
   async initMock() {
     try {
