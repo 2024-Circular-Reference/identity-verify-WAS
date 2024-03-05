@@ -1,85 +1,120 @@
 use halo2_proofs::{
     arithmetic::Field,
-    circuit::SimpleFloorPlanner,
-    pasta::EqAffine,
+    circuit::{Layouter, Region, SimpleFloorPlanner, Value},
+    pasta::{group::ff::PrimeField, EqAffine, Fp},
     plonk::{
-        create_proof, keygen_pk, keygen_vk, verify_proof, Circuit, ConstraintSystem, Error,
-        VerifyingKey,
+        create_proof, keygen_pk, keygen_vk, verify_proof, Advice, Circuit, Column,
+        ConstraintSystem, Error, Instance, SingleVerifier,
     },
-    poly::commitment::Params,
-    transcript::{Blake2bWrite, Challenge255},
+    poly::{commitment::Params, Rotation},
+    transcript::{Blake2bRead, Blake2bWrite, Challenge255},
 };
 use rand_core::OsRng;
 
 #[derive(Clone, Copy)]
-struct MyCircuit;
+struct MyCircuit<F: Field> {
+    a: Value<F>,
+    b: Value<F>,
+}
 
-impl<F: Field> Circuit<F> for MyCircuit {
-    type Config = ();
-
+impl<F: Field> Circuit<F> for MyCircuit<F> {
+    type Config = (Column<Advice>, Column<Advice>, Column<Instance>);
     type FloorPlanner = SimpleFloorPlanner;
 
     fn without_witnesses(&self) -> Self {
         *self
     }
 
-    fn configure(_meta: &mut ConstraintSystem<F>) -> Self::Config {}
+    fn configure(meta: &mut ConstraintSystem<F>) -> Self::Config {
+        let a = meta.advice_column();
+        let b = meta.advice_column();
+        let c = meta.instance_column();
+
+        meta.create_gate("a + b = c", |cells| {
+            let a = cells.query_advice(a, Rotation::cur());
+            let b = cells.query_advice(b, Rotation::cur());
+            let c = cells.query_instance(c, Rotation::cur());
+
+            vec![a + b - c]
+        });
+
+        (a, b, c)
+    }
 
     fn synthesize(
         &self,
-        _config: Self::Config,
-        _layouter: impl halo2_proofs::circuit::Layouter<F>,
+        config: Self::Config,
+        mut layouter: impl Layouter<F>,
     ) -> Result<(), Error> {
+        let (a_col, b_col, c_col) = config;
+
+        layouter.assign_region(
+            || "assign_values",
+            |mut region: Region<'_, F>| {
+                // let a_val = match self.a {
+                //     Some(v) => Assigned::from(v),
+                //     None => Assigned::from(Fp::zero()),
+                // };
+
+                // let b_val = match self.b {
+                //     Some(v) => Value::known(v),
+                //     None => Value::unknown(),
+                // };
+
+                let a_val = self.a;
+                let b_val = self.b;
+
+                region.assign_advice(|| "a", a_col, 0, || a_val)?;
+                region.assign_advice(|| "b", b_col, 0, || b_val)?;
+
+                Ok(())
+            },
+        )?;
+
         Ok(())
     }
 }
 
 fn main() {
-    // Set up circuit parameters
-    let params: Params<EqAffine> = Params::new(3);
+    let circuit = MyCircuit {
+        b: Value::known(Fp::from_u128(2)),
+        a: Value::known(Fp::from_u128(10)),
+    };
 
-    // Generate verification key
-    let vk = keygen_vk(&params, &MyCircuit).expect("keygen_vk should not fail");
+    let instance = vec![Fp::from(12)];
 
-    // Generate proving key
-    let pk = keygen_pk(&params, vk, &MyCircuit).expect("keygen_pk should not fail");
+    let k = 4;
+    let params: Params<EqAffine> = Params::new(k);
 
-    // Create instances for the circuit
-    // let instances: Vec<Vec<EqAffine::Scalar>> = vec![
-    //     // Instance 1
-    //     vec![
-    //         EqAffine::Scalar::from(1u64),
-    //         EqAffine::Scalar::from(2u64),
-    //         EqAffine::Scalar::from(3u64),
-    //     ],
-    //     // Instance 2
-    //     vec![
-    //         EqAffine::Scalar::from(4u64),
-    //         EqAffine::Scalar::from(5u64),
-    //         EqAffine::Scalar::from(6u64),
-    //     ],
-    // ];
+    let vk = keygen_vk(&params, &circuit).expect("keygen_vk should not fail");
+    let pk = keygen_pk(&params, vk.clone(), &circuit).expect("keygen_pk should not fail");
+    let mut transcript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![1]);
 
-    // Create proving transcript
-    let mut transcript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
-
-    // Generate proof
     create_proof(
         &params,
         &pk,
-        &[MyCircuit, MyCircuit], // Circuits
-        // &instances,
-        &[&[], &[]],
+        &[circuit],
+        &[&[&instance.clone()]],
         OsRng,
         &mut transcript,
     )
     .expect("proof generation should not fail");
 
     let proof = transcript.finalize();
-
     println!("ZKP Proof: {:?}", proof);
 
-    // // Verify proof
-    // verify_proof(&params, &vk, &instances, transcript.into_inner())
-    //     .expect("proof verification should not fail");
+    // VERIFYING
+    let mut proof = &proof[..];
+
+    let mut transcript = Blake2bRead::<_, _, Challenge255<_>>::init(&mut proof);
+    let strategy = SingleVerifier::new(&params);
+
+    let verifier = verify_proof(
+        &params,
+        &vk,
+        strategy,
+        &[&[&instance.clone()]],
+        &mut transcript,
+    )
+    .unwrap();
 }
