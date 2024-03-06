@@ -6,12 +6,16 @@ use halo2_proofs::{
     circuit::{AssignedCell, Chip, Layouter, Region, SimpleFloorPlanner, Value},
     pasta::{EqAffine, Fp},
     plonk::{
-        create_proof, keygen_pk, keygen_vk, Advice, Circuit, Column, ConstraintSystem, Error,
-        Instance, ProvingKey, Selector, VerifyingKey,
+        create_proof, keygen_pk, keygen_vk, verify_proof, Advice, Circuit, Column,
+        ConstraintSystem, Error, Instance, ProvingKey, Selector, SingleVerifier, VerifyingKey,
     },
     poly::{commitment::Params, Rotation},
-    transcript::{Blake2bWrite, Challenge255},
+    transcript::{Blake2bRead, Blake2bWrite, Challenge255},
 };
+
+mod verify;
+
+use verify::*;
 
 // ANCHOR: field-instructions
 /// A variable representing a number.
@@ -499,7 +503,6 @@ impl<F: Field> Circuit<F> for MyCircuit<F> {
     }
 }
 // ANCHOR_END: circuit
-//
 
 fn gen_params(
     circuit: MyCircuit<Fp>,
@@ -515,63 +518,68 @@ fn gen_params(
 
     let vk = keygen_vk(&params, &circuit).expect("keygen_vk should not fail");
     let pk = keygen_pk(&params, vk.clone(), &circuit).expect("keygen_pk should not fail");
-    let mut transcript = Blake2bWrite::<_, EqAffine, Challenge255<_>>::init(vec![]);
+
+    let transcript = Blake2bWrite::<_, EqAffine, Challenge255<_>>::init(vec![]);
 
     (k, params, vk, pk, transcript)
 }
 
 #[allow(clippy::many_single_char_names)]
 fn main() {
-    use halo2_proofs::{dev::MockProver, pasta::Fp};
     use rand_core::OsRng;
 
-    // ANCHOR: test-circuit
-    // The number of rows in our circuit cannot exceed 2^k. Since our example
-    // circuit is very small, we can pick a very small value here.
-    // let k = 4;
-    //
-
-    // Prepare the private and public inputs to the circuit!
     let rng = OsRng;
     let a = Fp::random(rng);
     let b = Fp::random(rng);
     let c = Fp::random(rng);
     let d = (a + b) * c;
 
-    // Instantiate the circuit with the private inputs.
+    println!("[prover] a: {:?}", a);
+    println!("[prover] b: {:?}", b);
+    println!("[prover] c: {:?}", c);
+    println!("[prover] d: {:?}", d);
+
     let circuit = MyCircuit {
         a: Value::known(a),
         b: Value::known(b),
         c: Value::known(c),
+        // TODO
+        // holder sign --> authenticate in circuit
+        // // decrypt with holder_pub_key, prefix should be "neardid_circular_reference:"
+        //
     };
 
-    let (k, params, vk, pk, mut transcript) = gen_params(circuit.clone());
+    let (_k, params, vk, pk, mut transcript) = gen_params(circuit.clone());
 
     create_proof(
         &params,
         &pk,
         &[circuit],
         &[&[&vec![d]]],
+        // &[&[&vec![Fp::zero()]]],
         OsRng,
         &mut transcript,
     )
     .expect("proof should be generated");
 
     let proof = transcript.finalize();
+    println!("[prover] Proof has been generated");
+    println!("[prover] Proof: {:?}...", &proof[..8]);
+    println!("[verify] Pub input: {:?}", d);
 
-    println!("zkp proof: {:?}", proof);
+    //====================================================================
+    //                             Verifying
+    //====================================================================
 
-    // // Arrange the public input. We expose the multiplication result in row 0
-    // // of the instance column, so we position it there in our public inputs.
-    // let mut public_inputs = vec![d];
+    println!("\n[verify] Verify stage...");
+    println!("[verify] Proof: {:?}...", &proof[..8]);
+    let proof = &proof[..];
 
-    // // Given the correct public input, our circuit will verify.
-    // let prover = MockProver::run(4u32, &circuit, vec![public_inputs.clone()]).unwrap();
-    // assert_eq!(prover.verify(), Ok(()));
+    let mut transcript = Blake2bRead::init(proof);
+    let strategy = SingleVerifier::new(&params);
 
-    // // If we try some other public input, the proof will fail!
-    // public_inputs[0] += Fp::one();
-    // let prover = MockProver::run(4u32, &circuit, vec![public_inputs]).unwrap();
-    // assert!(prover.verify().is_err());
-    // ANCHOR_END: test-circuit
+    let result = verify_proof(&params, &vk, strategy, &[&[&vec![d]]], &mut transcript);
+
+    assert_eq!(result.is_ok(), true);
+    println!("[verify] Proof has been verified")
 }
