@@ -14,7 +14,7 @@ export class IssuerAPIService {
   constructor(
     private httpService: HttpService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   createUserVC(dto: UserVCDto) {
     const { stMajorCode, holderPubKey } = dto;
