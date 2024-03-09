@@ -8,13 +8,15 @@ import * as bcrypt from 'bcrypt';
 import { UserVCDto } from '../dto/user-vc.dto';
 import { connectToNEARContract, createVC } from '../utils/utils';
 import { NEARContract } from '../types/types';
+import * as ed25519 from '@stablelib/ed25519';
+import { encode, decode } from 'uint8-to-base64';
 
 @Injectable()
 export class IssuerAPIService {
   constructor(
     private httpService: HttpService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   createUserVC(dto: UserVCDto) {
     const { stMajorCode, holderPubKey } = dto;
@@ -52,6 +54,33 @@ export class IssuerAPIService {
 
     console.log(`[+] hashed VCs from issuer '${issuerPubKey}': ${response}`);
     return;
+  }
+
+  generateProofValue(): string {
+    //! Key는 일단 env 파일로 관리
+    // Issuer Key Pair 생성
+    // => Public Key: 32자리 base64 / Private Key: 64자리 base64
+    // const { publicKey, secretKey } = ed25519.generateKeyPair();
+
+    // VC sign 목적 proofValue 생성
+    // Private Key로 msg를 sign함
+    // => Proof Value: 64자리 base64
+    const message = `pnu_uuidv4`;
+    return encode(
+      ed25519.sign(
+        decode(this.configService.get<string>('ISSUER_PRI_KEY')),
+        Buffer.from(message),
+      ),
+    );
+  }
+
+  verifyProofValue(message: string, proofValue: string): boolean {
+    // proofValue에 대해 Public Key로 verify
+    return ed25519.verify(
+      decode(this.configService.get<string>('ISSUER_PUB_KEY')),
+      Buffer.from(message),
+      decode(proofValue),
+    );
   }
 
   async getIssuerPubKey() {
