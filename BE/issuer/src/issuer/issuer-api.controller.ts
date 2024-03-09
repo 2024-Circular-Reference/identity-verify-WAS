@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseFilters } from '@nestjs/common';
+import { Controller, Get, Query, UseFilters, Post } from '@nestjs/common';
 import { IssuerAPIService } from './issuer-api.service';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { UserVCDto } from '../dto/user-vc.dto';
@@ -33,5 +33,34 @@ export class IssuerAPIController {
     }
     const issuerPubKey = await this.issuerAPIService.getIssuerPubKey();
     return { issuerPubKey, vc };
+  }
+
+  /*
+    @ Test Pub Key, Pri Key, Sign
+    - Pub Key: 21H+4UnTBl4MiUi47Oi6OzFy+3yVocYWK8BSsvfFEKA=
+    - Pri Key: ypHCLNpqOwa+leQot7Oz53giFGztZybfYtgQ0I62e87bUf7hSdMGXgyJSLjs6Lo7MXL7fJWhxhYrwFKy98UQoA==
+    - Sign: 6I/1WOSXgNvZO6CydqTg5LCkzr5TEtvXuR5Ly1a+c/X+XGmHtfPcavJ2N5BZQA9uvaKk/+N0h9AVkaVvnTk/Ag==
+    - Message: pnu_uuidv4
+  */
+
+  // TODO: Holder에서 호출
+  @Post('/generate-proof-value')
+  @ApiOperation({
+    summary: 'base64 string[64] 형태 Proof Value 생성',
+  })
+  generateProofValue() {
+    return this.issuerAPIService.generateProofValue();
+  }
+
+  // TODO: Holder에서 호출
+  @Get('/verify-proof-value')
+  @ApiOperation({
+    summary: 'Proof Value 검증 후 boolean 반환',
+  })
+  verifyProofValue(
+    @Query('message') message: string,
+    @Query('proofValue') proofValue: string,
+  ) {
+    return this.issuerAPIService.verifyProofValue(message, proofValue);
   }
 }

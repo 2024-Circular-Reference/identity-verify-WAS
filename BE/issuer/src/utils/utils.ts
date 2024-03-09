@@ -62,13 +62,14 @@ export function createVC(
       },
     },
     proof: {
-      type: "CircRefNEARDIDProof",
-      cryptosuite: "eddsa",
+      type: 'CircRefNEARDIDProof',
+      cryptosuite: 'eddsa',
       created: timeStamp,
-      verificationMethod: "CircRefVCSignatureVerificationMethod",
-      proofPurpose: "assertionMethod",
-      proofValue: "1B59B0290FEA0A7C8EB3308FA5AE87AFCC970D5C68AE651CE8E7A002E121A993F5EF3FCDEDC9C4A64E76A119F42259D2B4F2D24999469871CB2288A5E9C39402"
-    }
+      verificationMethod: 'CircRefVCSignatureVerificationMethod',
+      proofPurpose: 'assertionMethod',
+      proofValue:
+        '1B59B0290FEA0A7C8EB3308FA5AE87AFCC970D5C68AE651CE8E7A002E121A993F5EF3FCDEDC9C4A64E76A119F42259D2B4F2D24999469871CB2288A5E9C39402',
+    },
   };
 }
 
