@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
@@ -9,7 +10,7 @@ import { UserVCDto } from '../dto/user-vc.dto';
 import { connectToNEARContract, createVC } from '../utils/utils';
 import { NEARContract } from '../types/types';
 import * as ed25519 from '@stablelib/ed25519';
-import { encode, decode } from 'uint8-to-base64';
+const bs58 = require('bs58');
 
 @Injectable()
 export class IssuerAPIService {
@@ -56,19 +57,19 @@ export class IssuerAPIService {
     return;
   }
 
-  generateProofValue(): string {
+  generateProofValue() {
     //! Key는 일단 env 파일로 관리
     // Issuer Key Pair 생성
-    // => Public Key: 32자리 base64 / Private Key: 64자리 base64
+    // => Public Key: 32자리 base58 / Private Key: 64자리 base58
     // const { publicKey, secretKey } = ed25519.generateKeyPair();
 
     // VC sign 목적 proofValue 생성
     // Private Key로 msg를 sign함
-    // => Proof Value: 64자리 base64
-    const message = `pnu_uuidv4`;
-    return encode(
+    // => Proof Value: 64자리 base58
+    const message = `pnu_${uuidv4()}`;
+    return bs58.encode(
       ed25519.sign(
-        decode(this.configService.get<string>('ISSUER_PRI_KEY')),
+        bs58.decode(this.configService.get<string>('ISSUER_PRI_KEY')),
         Buffer.from(message),
       ),
     );
@@ -77,9 +78,9 @@ export class IssuerAPIService {
   verifyProofValue(message: string, proofValue: string): boolean {
     // proofValue에 대해 Public Key로 verify
     return ed25519.verify(
-      decode(this.configService.get<string>('ISSUER_PUB_KEY')),
+      bs58.decode(this.configService.get<string>('ISSUER_PUB_KEY')),
       Buffer.from(message),
-      decode(proofValue),
+      bs58.decode(proofValue),
     );
   }
 
