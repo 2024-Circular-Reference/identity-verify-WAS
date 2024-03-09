@@ -31,13 +31,13 @@
     "@stablelib/ed25519": "^1.0.3",
     "@types/bcrypt": "^5.0.2",
     "bcrypt": "^5.1.1",
+    "bs58": "^5.0.0",
     "crypto": "^1.0.1",
     "near-api-js": "^3.0.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
     "swagger-ui-express": "^5.0.0",
-    "uint8-to-base64": "^0.2.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
