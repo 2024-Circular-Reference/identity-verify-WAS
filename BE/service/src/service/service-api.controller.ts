@@ -26,7 +26,7 @@ export class ServiceAPIController {
   @ApiOperation({
     summary: 'HOLDER 호출) 학생 정보로 전공 코드를 반환',
   })
-  async getUserMajot(@Query() dto: UserInfoDto): Promise<string> {
+  async getUserMajor(@Query() dto: UserInfoDto): Promise<string> {
     const res = await this.serviceAPIService.getUserMajor(dto);
     if (!res) {
       return '';
