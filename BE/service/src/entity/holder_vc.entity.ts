@@ -5,6 +5,6 @@ export class HolderVCEntity {
   @PrimaryColumn({ type: 'varchar', length: 64 })
   did!: string;
 
-  @Column({ type: 'varchar', length: 512 })
+  @Column({ type: 'varchar', length: 1024 })
   vc!: string;
 }
