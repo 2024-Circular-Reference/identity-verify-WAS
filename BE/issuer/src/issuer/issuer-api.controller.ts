@@ -25,13 +25,13 @@ export class IssuerAPIController {
     } catch (error) {
       throw new CustomErrorException('VC Save Failed', 500);
     }
+    const issuerPubKey = await this.issuerAPIService.getIssuerPubKey();
     try {
       // 블록체인에 키 체인 적재
-      await this.issuerAPIService.loadKeyChain(vcString);
+      await this.issuerAPIService.loadKeyChain(issuerPubKey, vcString);
     } catch (error) {
       throw new CustomErrorException('Block Chain Load Failed', 500);
     }
-    const issuerPubKey = await this.issuerAPIService.getIssuerPubKey();
     return { issuerPubKey, vc };
   }
 

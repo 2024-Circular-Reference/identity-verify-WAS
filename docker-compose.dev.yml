@@ -4,27 +4,35 @@ services:
     build: ./BE/holder
     image: holder
     ports:
-      - "8081:8081"
+      - 8081:8081
+    volumes:
+      - ./BE/holder:/usr/src/app
 
   issuer:
     build: ./BE/issuer
     image: issuer
     ports:
-      - "8082:8082"
+      - 8082:8082
+    volumes:
+      - ./BE/issuer:/usr/src/app
 
   verifier:
     build: ./BE/verifier
     image: verifier
     ports:
-      - "8083:8083"
+      - 8083:8083
+    volumes:
+      - ./BE/verifier:/usr/src/app
 
   service:
     build: ./BE/service
     image: service
     ports:
-      - "4000:4000"
+      - 4000:4000
     depends_on:
       - mysql
+    volumes:
+      - ./BE/service:/usr/src/app
 
   mysql:
     image: mysql:8.0
