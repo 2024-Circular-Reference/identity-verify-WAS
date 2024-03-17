@@ -1,21 +1,16 @@
 use std::marker::PhantomData;
 
-use group::ff::Field;
-
 use halo2_proofs::{
+    arithmetic::Field,
     circuit::{AssignedCell, Chip, Layouter, Region, SimpleFloorPlanner, Value},
-    pasta::{EqAffine, Fp},
+    pasta::EqAffine,
     plonk::{
         create_proof, keygen_pk, keygen_vk, verify_proof, Advice, Circuit, Column,
-        ConstraintSystem, Error, Instance, ProvingKey, Selector, SingleVerifier, VerifyingKey,
+        ConstraintSystem, Error, Instance, Selector, SingleVerifier,
     },
     poly::{commitment::Params, Rotation},
     transcript::{Blake2bRead, Blake2bWrite, Challenge255},
 };
-
-mod verify;
-
-use verify::*;
 
 // ANCHOR: field-instructions
 /// A variable representing a number.
@@ -457,7 +452,7 @@ impl<F: Field> FieldInstructions<F> for FieldChip<F> {
 /// In this struct we store the private input variables. We use `Value<F>` because
 /// they won't have any value during key generation. During proving, if any of these
 /// were `Value::unknown()` we would get an error.
-#[derive(Default, Clone)]
+#[derive(Default)]
 struct MyCircuit<F: Field> {
     a: Value<F>,
     b: Value<F>,
@@ -504,82 +499,70 @@ impl<F: Field> Circuit<F> for MyCircuit<F> {
 }
 // ANCHOR_END: circuit
 
-fn gen_params(
-    circuit: MyCircuit<Fp>,
-) -> (
-    u32,
-    Params<EqAffine>,
-    VerifyingKey<EqAffine>,
-    ProvingKey<EqAffine>,
-    Blake2bWrite<Vec<u8>, EqAffine, Challenge255<EqAffine>>,
-) {
-    let k = 4;
-    let params: Params<EqAffine> = Params::new(k);
-
-    let vk = keygen_vk(&params, &circuit).expect("keygen_vk should not fail");
-    let pk = keygen_pk(&params, vk.clone(), &circuit).expect("keygen_pk should not fail");
-
-    let transcript = Blake2bWrite::<_, EqAffine, Challenge255<_>>::init(vec![]);
-
-    (k, params, vk, pk, transcript)
-}
-
 #[allow(clippy::many_single_char_names)]
 fn main() {
+    use halo2_proofs::{dev::MockProver, pasta::Fp};
     use rand_core::OsRng;
 
+    // ANCHOR: test-circuit
+    // The number of rows in our circuit cannot exceed 2^k. Since our example
+    // circuit is very small, we can pick a very small value here.
+    let k = 4;
+
+    // Prepare the private and public inputs to the circuit!
     let rng = OsRng;
     let a = Fp::random(rng);
     let b = Fp::random(rng);
     let c = Fp::random(rng);
     let d = (a + b) * c;
 
-    println!("[prover] a: {:?}", a);
-    println!("[prover] b: {:?}", b);
-    println!("[prover] c: {:?}", c);
-    println!("[prover] d: {:?}", d);
-
+    // Instantiate the circuit with the private inputs.
     let circuit = MyCircuit {
         a: Value::known(a),
         b: Value::known(b),
         c: Value::known(c),
-        // TODO
-        // holder sign --> authenticate in circuit
-        // // decrypt with holder_pub_key, prefix should be "neardid_circular_reference:"
-        //
     };
 
-    let (_k, params, vk, pk, mut transcript) = gen_params(circuit.clone());
+    {
+        let public_inputs = vec![d];
 
-    create_proof(
-        &params,
-        &pk,
-        &[circuit],
-        &[&[&vec![d]]],
-        // &[&[&vec![Fp::zero()]]],
-        OsRng,
-        &mut transcript,
-    )
-    .expect("proof should be generated");
+        // 증명 파라미터 생성
+        let params: Params<EqAffine> = Params::new(k);
 
-    let proof = transcript.finalize();
-    println!("[prover] Proof has been generated");
-    println!("[prover] Proof: {:?}...", &proof[..8]);
-    println!("[verify] Pub input: {:?}", d);
+        // Proving Key 및 Verification Key 생성
+        let vk = keygen_vk(&params, &circuit).expect("Verification key 생성 실패");
+        let pk = keygen_pk(&params, vk.clone(), &circuit).expect("Proving key 생성 실패");
 
-    //====================================================================
-    //                             Verifying
-    //====================================================================
+        // Transcript 초기화
+        let mut transcript = Blake2bWrite::<Vec<u8>, _, Challenge255<_>>::init(vec![]);
 
-    println!("\n[verify] Verify stage...");
-    println!("[verify] Proof: {:?}...", &proof[..8]);
-    let proof = &proof[..];
+        // 증명 생성
+        create_proof(
+            &params,
+            &pk,
+            &[circuit],
+            &[&[&public_inputs]],
+            OsRng,
+            &mut transcript,
+        )
+        .expect("증명 생성 실패");
 
-    let mut transcript = Blake2bRead::init(proof);
-    let strategy = SingleVerifier::new(&params);
+        let proof = transcript.finalize();
+        let strategy = SingleVerifier::new(&params);
 
-    let result = verify_proof(&params, &vk, strategy, &[&[&vec![d]]], &mut transcript);
+        println!("ZKP proof: {:?} ...", &proof[..6]);
 
-    assert_eq!(result.is_ok(), true);
-    println!("[verify] Proof has been verified")
+        // 증명 검증
+        let mut transcript = Blake2bRead::<_, _, Challenge255<_>>::init(&proof[..]);
+        let res = verify_proof(
+            &params, //
+            &vk,
+            strategy,
+            &[&[&public_inputs]],
+            &mut transcript,
+        );
+
+        assert!(res.is_ok(), "증명 검증 실패");
+        println!("증명 검증 성공");
+    }
 }
