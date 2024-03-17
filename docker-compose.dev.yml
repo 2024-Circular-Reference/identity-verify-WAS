@@ -15,6 +15,7 @@ services:
       - 8082:8082
     volumes:
       - ./BE/issuer:/usr/src/app
+      - /usr/src/app/node_modules
 
   verifier:
     build: ./BE/verifier
@@ -23,6 +24,7 @@ services:
       - 8083:8083
     volumes:
       - ./BE/verifier:/usr/src/app
+      - /usr/src/app/node_modules
 
   service:
     build: ./BE/service
@@ -43,6 +45,5 @@ services:
       MYSQL_DATABASE: db
     volumes:
       - mysql-data:/var/lib/mysql
-
 volumes:
   mysql-data:
