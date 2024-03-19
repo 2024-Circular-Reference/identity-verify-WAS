@@ -37,8 +37,7 @@ export class IssuerAPIService {
     return;
   }
 
-  async loadKeyChain(vc: string) {
-    const issuerPubKey = await this.getIssuerPubKey();
+  async loadKeyChain(issuerPubKey: string, vc: string) {
     const contract = await connectToNEARContract();
 
     // { Issuer Pub Key : Hash(VC) } 적재

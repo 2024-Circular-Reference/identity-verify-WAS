@@ -13,6 +13,6 @@ export const TypeormConfig = (
   password: configService.get<string>('DB_PWD'),
   database: 'db',
   entities: [HolderVCEntity, StudentEntity],
-  synchronize: true,
+  synchronize: false,
   logging: true,
 });
