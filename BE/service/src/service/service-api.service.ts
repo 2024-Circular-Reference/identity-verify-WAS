@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { ProofDto } from '../dto/proof.dto';
 import { lastValueFrom, map } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
-import { HolderVCEntity } from '../entity/holder_vc.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { StudentEntity } from 'src/entity/student.entity';
@@ -14,8 +13,6 @@ import { UserInfoDto } from 'src/dto/user-info.dto';
 @Injectable()
 export class ServiceAPIService {
   constructor(
-    @InjectRepository(HolderVCEntity)
-    private holderVCRepository: Repository<HolderVCEntity>,
     @InjectRepository(StudentEntity)
     private studentRepository: Repository<StudentEntity>,
     private httpService: HttpService,
@@ -39,11 +36,6 @@ export class ServiceAPIService {
       .where('student.number = :stNum', { stNum })
       .andWhere('student.password = :stPwd', { stPwd })
       .getOne();
-  }
-
-  async saveUserVC(uuid: string, vc: string) {
-    await this.holderVCRepository.save({ did: uuid, vc });
-    return;
   }
 
   // config 폴더의 mock data를 DB에 삽입

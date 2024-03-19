@@ -19,12 +19,6 @@ export class IssuerAPIController {
   async createUserVC(@Query() dto: UserVCDto) {
     const { uuid, vc } = this.issuerAPIService.createUserVC(dto);
     const vcString = JSON.stringify(vc);
-    try {
-      // DB에 VC 저장
-      await this.issuerAPIService.saveUserVC(uuid, vcString);
-    } catch (error) {
-      throw new CustomErrorException('VC Save Failed', 500);
-    }
     const issuerPubKey = await this.issuerAPIService.getIssuerPubKey();
     try {
       // 블록체인에 키 체인 적재

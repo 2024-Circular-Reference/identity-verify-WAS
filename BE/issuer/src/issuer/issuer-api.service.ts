@@ -26,17 +26,6 @@ export class IssuerAPIService {
     return { uuid, vc };
   }
 
-  // Service API 호출
-  async saveUserVC(uuid: string, vc: string) {
-    const url = this.configService.get<string>('API_SAVE_USER_VC');
-    await lastValueFrom(
-      this.httpService
-        .post(url, { uuid, vc })
-        .pipe(map((response) => response.data)),
-    );
-    return;
-  }
-
   async loadKeyChain(issuerPubKey: string, vc: string) {
     const contract = await connectToNEARContract();
 
