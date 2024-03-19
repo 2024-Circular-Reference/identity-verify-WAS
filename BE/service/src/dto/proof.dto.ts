@@ -6,4 +6,13 @@ export class ProofDto {
 
   @ApiProperty({ description: 'Proof' })
   readonly proof: string;
+
+  @ApiProperty({ description: 'Issuer pub key' })
+  readonly IssuerPubKey: string;
+
+  @ApiProperty({ description: 'Major code' })
+  readonly majorCode: string;
+
+  @ApiProperty({ description: 'Metadata' })
+  readonly metadata: { params: {}, vkey: Uint8Array, strategy: Uint8Array };
 }
