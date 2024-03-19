@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use halo2_proofs::{
     arithmetic::Field,
     circuit::{AssignedCell, Chip, Layouter, Region, SimpleFloorPlanner, Value},
-    pasta::EqAffine,
+    pasta::{group::ff::PrimeField, EqAffine},
     plonk::{
         create_proof, keygen_pk, keygen_vk, verify_proof, Advice, Circuit, Column,
         ConstraintSystem, Error, Instance, Selector, SingleVerifier,
@@ -11,6 +11,10 @@ use halo2_proofs::{
     poly::{commitment::Params, Rotation},
     transcript::{Blake2bRead, Blake2bWrite, Challenge255},
 };
+
+use crate::wasm::gen_proof;
+
+mod wasm;
 
 // ANCHOR: field-instructions
 /// A variable representing a number.
@@ -268,30 +272,12 @@ impl<F: Field> MulChip<F> {
         }
         let s_mul = meta.selector();
 
-        // Define our multiplication gate!
         meta.create_gate("mul", |meta| {
-            // To implement multiplication, we need three advice cells and a selector
-            // cell. We arrange them like so:
-            //
-            // | a0  | a1  | s_mul |
-            // |-----|-----|-------|
-            // | lhs | rhs | s_mul |
-            // | out |     |       |
-            //
-            // Gates may refer to any relative offsets we want, but each distinct
-            // offset adds a cost to the proof. The most common offsets are 0 (the
-            // current row), 1 (the next row), and -1 (the previous row), for which
-            // `Rotation` has specific constructors.
             let lhs = meta.query_advice(advice[0], Rotation::cur());
             let rhs = meta.query_advice(advice[1], Rotation::cur());
             let out = meta.query_advice(advice[0], Rotation::next());
             let s_mul = meta.query_selector(s_mul);
 
-            // The polynomial expression returned from `create_gate` will be
-            // constrained by the proving system to equal zero. Our expression
-            // has the following properties:
-            // - When s_mul = 0, any value is allowed in lhs, rhs, and out.
-            // - When s_mul != 0, this constrains lhs * rhs = out.
             vec![s_mul * (lhs * rhs - out)]
         });
 
@@ -329,24 +315,13 @@ impl<F: Field> MulInstructions<F> for MulChip<F> {
         layouter.assign_region(
             || "mul",
             |mut region: Region<'_, F>| {
-                // We only want to use a single multiplication gate in this region,
-                // so we enable it at region offset 0; this means it will constrain
-                // cells at offsets 0 and 1.
                 config.s_mul.enable(&mut region, 0)?;
 
-                // The inputs we've been given could be located anywhere in the circuit,
-                // but we can only rely on relative offsets inside this region. So we
-                // assign new cells inside the region and constrain them to have the
-                // same values as the inputs.
                 a.0.copy_advice(|| "lhs", &mut region, config.advice[0], 0)?;
                 b.0.copy_advice(|| "rhs", &mut region, config.advice[1], 0)?;
 
-                // Now we can compute the multiplication result, which is to be assigned
-                // into the output position.
                 let value = a.0.value().copied() * b.0.value();
 
-                // Finally, we do the assignment to the output, returning a
-                // variable to be used in another part of the circuit.
                 region
                     .assign_advice(|| "lhs * rhs", config.advice[0], 1, || value)
                     .map(Number)
@@ -454,7 +429,7 @@ impl<F: Field> FieldInstructions<F> for FieldChip<F> {
 /// were `Value::unknown()` we would get an error.
 #[derive(Default)]
 struct MyCircuit<F: Field> {
-    a: Value<F>,
+    major_code: Value<F>,
     b: Value<F>,
     c: Value<F>,
 }
@@ -486,22 +461,26 @@ impl<F: Field> Circuit<F> for MyCircuit<F> {
         let field_chip = FieldChip::<F>::construct(config, ());
 
         // Load our private values into the circuit.
-        let a = field_chip.load_private(layouter.namespace(|| "load a"), self.a)?;
+
+        let major_code =
+            field_chip.load_private(layouter.namespace(|| "load major_code"), self.major_code)?;
+
         let b = field_chip.load_private(layouter.namespace(|| "load b"), self.b)?;
         let c = field_chip.load_private(layouter.namespace(|| "load c"), self.c)?;
 
         // Use `add_and_mul` to get `d = (a + b) * c`.
-        let d = field_chip.add_and_mul(&mut layouter, a, b, c)?;
+        // let d = field_chip.add_and_mul(&mut layouter, a, b, c)?;
 
         // Expose the result as a public input to the circuit.
-        field_chip.expose_public(layouter.namespace(|| "expose d"), d, 0)
+        field_chip.expose_public(layouter.namespace(|| "expose major_code"), major_code, 0)?;
+        field_chip.expose_public(layouter.namespace(|| "expose major_code"), b, 1)
     }
 }
 // ANCHOR_END: circuit
 
 #[allow(clippy::many_single_char_names)]
 fn main() {
-    use halo2_proofs::{dev::MockProver, pasta::Fp};
+    use halo2_proofs::pasta::Fp;
     use rand_core::OsRng;
 
     // ANCHOR: test-circuit
@@ -511,20 +490,22 @@ fn main() {
 
     // Prepare the private and public inputs to the circuit!
     let rng = OsRng;
-    let a = Fp::random(rng);
+    let major_code = Fp::from_u128(245);
+
     let b = Fp::random(rng);
     let c = Fp::random(rng);
-    let d = (a + b) * c;
+
+    // let d = (a + b) * c;
 
     // Instantiate the circuit with the private inputs.
     let circuit = MyCircuit {
-        a: Value::known(a),
+        major_code: Value::known(major_code),
         b: Value::known(b),
         c: Value::known(c),
     };
 
     {
-        let public_inputs = vec![d];
+        let public_inputs = vec![Fp::from_u128(245), b];
 
         // 증명 파라미터 생성
         let params: Params<EqAffine> = Params::new(k);

@@ -300,12 +300,12 @@ impl<F: Field> Circuit<F> for MyCircuit<F> {
         //     ab   = a*b
         //     absq = ab^2
         //     c    = constant*absq
-        let ab = field_chip.mul_inst(layouter.namespace(|| "a * b"), a, b)?;
-        let absq = field_chip.mul_inst(layouter.namespace(|| "ab * ab"), ab.clone(), ab)?;
-        let c = field_chip.mul_inst(layouter.namespace(|| "constant * absq"), constant, absq)?;
+        // let ab = field_chip.mul_inst(layouter.namespace(|| "a * b"), a, b)?;
+        // let absq = field_chip.mul_inst(layouter.namespace(|| "ab * ab"), ab.clone(), ab)?;
+        // let c = field_chip.mul_inst(layouter.namespace(|| "constant * absq"), constant, absq)?;
 
         // Expose the result as a public input to the circuit.
-        field_chip.expose_public(layouter.namespace(|| "expose c"), c, 0)
+        field_chip.expose_public(layouter.namespace(|| "expose c"), a, 0)
     }
 }
 // ANCHOR_END: circuit
@@ -350,7 +350,8 @@ fn main() {
     }
 
     {
-        let public_inputs = vec![c];
+        // let public_inputs = vec![c];
+        let public_inputs = vec![a];
 
         // 증명 파라미터 생성
         let params: Params<EqAffine> = Params::new(k);
