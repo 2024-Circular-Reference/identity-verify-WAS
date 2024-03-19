@@ -16,11 +16,13 @@ export class VerifierAPIController {
     summary: '생성된 Proof를 검증',
   })
   async verifyProof(@Query() dto: ProofDto): Promise<boolean> {
-    const { HolderPubKey, proof, IssuerPubKey, majorCode, metadata } = dto;
+    const { HolderPubKey, proof, IssuerPubKey, majorCode, message, metadata } =
+      dto;
     const verifyResult = this.verifierAPIService.verifyProof(
       proof,
       IssuerPubKey,
       majorCode,
+      message,
       metadata.params,
       metadata.vkey,
       metadata.strategy,

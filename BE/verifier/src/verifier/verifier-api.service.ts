@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { NEARContract, NEARVerfiyResult } from '../types/types';
+import { NEARVerfiyResult } from '../types/types';
 import { connectToNEARContract } from '../utils/utils';
 
 @Injectable()
@@ -8,7 +8,8 @@ export class VerifierAPIService {
     proof: string,
     IssuerPubKey: string,
     majorCode: string,
-    params: {},
+    message: string,
+    params: object,
     vkey: Uint8Array,
     strategy: Uint8Array,
   ): boolean {
@@ -18,8 +19,6 @@ export class VerifierAPIService {
   }
 
   async loadProofResult(HolderPubKey: string) {
-    // TODO: Some block chain code snippet
-    // { Holder Pub Key, True }
     // TODO: 내부 코드 변경 필요 (예상)
     const contract = await connectToNEARContract();
 

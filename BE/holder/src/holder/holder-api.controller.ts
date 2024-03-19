@@ -20,13 +20,18 @@ export class HolderAPIController {
     if (!stMajorCode) {
       throw new CustomErrorException('User Not Exist', 404);
     }
-    const { issuerPubKey, vc }= await this.holderAPIService.createUserVC(dto, stMajorCode);
-    const proofValue = await this.holderAPIService.getProofValue();
+    const { issuerPubKey, vc } = await this.holderAPIService.createUserVC(
+      dto,
+      stMajorCode,
+    );
+    const { proofValue, message } = await this.holderAPIService.getProofValue();
     const rawVC = JSON.parse(vc);
-    // TODO: 이게 맞나?
-    Object.assign(rawVC, { proofValue })
+    Object.assign(rawVC, { proofValue });
 
-    return { statusCode: 200, data: { issuerPubKey, vc: rawVC } };
+    return {
+      statusCode: 200,
+      data: { issuerPubKey, vc: JSON.stringify(rawVC), message },
+    };
   }
 
   // TODO: 노션 적혀있어서 구현하긴 했는데 이게 뭐지?

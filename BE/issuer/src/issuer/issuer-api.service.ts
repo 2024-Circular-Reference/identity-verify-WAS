@@ -55,21 +55,15 @@ export class IssuerAPIService {
     // Private Key로 msg를 sign함
     // => Proof Value: 64자리 base58
     const message = `pnu_${uuidv4()}`;
-    return bs58.encode(
-      ed25519.sign(
-        bs58.decode(this.configService.get<string>('ISSUER_PRI_KEY')),
-        Buffer.from(message),
+    return {
+      proofValue: bs58.encode(
+        ed25519.sign(
+          bs58.decode(this.configService.get<string>('ISSUER_PRI_KEY')),
+          Buffer.from(message),
+        ),
       ),
-    );
-  }
-
-  verifyProofValue(message: string, proofValue: string): boolean {
-    // proofValue에 대해 Public Key로 verify
-    return ed25519.verify(
-      bs58.decode(this.configService.get<string>('ISSUER_PUB_KEY')),
-      Buffer.from(message),
-      bs58.decode(proofValue),
-    );
+      message,
+    };
   }
 
   async getIssuerPubKey() {
