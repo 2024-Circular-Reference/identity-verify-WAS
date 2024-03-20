@@ -12,8 +12,6 @@ use halo2_proofs::{
     transcript::{Blake2bRead, Blake2bWrite, Challenge255},
 };
 
-use crate::wasm::gen_proof;
-
 mod wasm;
 
 // ANCHOR: field-instructions
@@ -430,8 +428,11 @@ impl<F: Field> FieldInstructions<F> for FieldChip<F> {
 #[derive(Default)]
 struct MyCircuit<F: Field> {
     major_code: Value<F>,
-    b: Value<F>,
-    c: Value<F>,
+    //
+    signature_r: Value<F>,
+    signature_s: Value<F>,
+    message: Value<F>,
+    // public key == public input (instance)
 }
 
 impl<F: Field> Circuit<F> for MyCircuit<F> {
@@ -465,18 +466,97 @@ impl<F: Field> Circuit<F> for MyCircuit<F> {
         let major_code =
             field_chip.load_private(layouter.namespace(|| "load major_code"), self.major_code)?;
 
-        let b = field_chip.load_private(layouter.namespace(|| "load b"), self.b)?;
-        let c = field_chip.load_private(layouter.namespace(|| "load c"), self.c)?;
+        let signature_r =
+            field_chip.load_private(layouter.namespace(|| "load signature_r"), self.signature_r)?;
+
+        let signature_s =
+            field_chip.load_private(layouter.namespace(|| "load signature_s"), self.signature_s)?;
+
+        let message =
+            field_chip.load_private(layouter.namespace(|| "load message"), self.message)?;
 
         // Use `add_and_mul` to get `d = (a + b) * c`.
         // let d = field_chip.add_and_mul(&mut layouter, a, b, c)?;
 
+        field_chip.ed25519_verify(
+            layouter.namespace(|| "ed25519 verify"),
+            signature_r,
+            signature_s,
+            message,
+        )?;
+
         // Expose the result as a public input to the circuit.
-        field_chip.expose_public(layouter.namespace(|| "expose major_code"), major_code, 0)?;
-        field_chip.expose_public(layouter.namespace(|| "expose major_code"), b, 1)
+        field_chip.expose_public(layouter.namespace(|| "expose major_code"), major_code, 0)
     }
 }
 // ANCHOR_END: circuit
+
+trait Ed25519Instruction<F: Field>: Chip<F> {
+    type Num;
+
+    fn ed25519_verify(
+        &self,
+        layouter: impl Layouter<F>,
+        signature_r: Self::Num,
+        signature_s: Self::Num,
+        message: Self::Num,
+    ) -> Result<(), Error>;
+}
+
+impl<F: Field> Ed25519Instruction<F> for FieldChip<F> {
+    type Num = Number<F>;
+
+    fn ed25519_verify(
+        &self,
+        mut layouter: impl Layouter<F>,
+        signature_r: Self::Num,
+        signature_s: Self::Num,
+        message: Self::Num,
+    ) -> Result<(), Error> {
+        let config = self.config();
+
+        layouter.assign_region(
+            || "verify ed25519 signature",
+            |mut region: Region<'_, F>| {
+                let i_public_key = region.assign_advice_from_instance(
+                    || "issuer public key",
+                    config.instance,
+                    1,                // public input row
+                    config.advice[0], // advice column
+                    0,                // advice offset
+                )?;
+
+                signature_r.0.copy_advice(
+                    || "signature r: (1, 0)",
+                    &mut region,
+                    config.advice[0],
+                    1,
+                )?;
+
+                signature_s.0.copy_advice(
+                    || "signature s: (1, 1)",
+                    &mut region,
+                    config.advice[1],
+                    1,
+                )?;
+
+                message
+                    .0
+                    .copy_advice(|| "message: (2, 0)", &mut region, config.advice[0], 2)?;
+
+                let sig_r = signature_r.0.value().copied();
+                let sig_s = signature_s.0.value().copied();
+                let msg = message.0.value().copied();
+
+                // TODO verifying signature
+
+                Ok(())
+            },
+        )?;
+
+        Ok(())
+    }
+}
 
 #[allow(clippy::many_single_char_names)]
 fn main() {
@@ -492,20 +572,18 @@ fn main() {
     let rng = OsRng;
     let major_code = Fp::from_u128(245);
 
-    let b = Fp::random(rng);
-    let c = Fp::random(rng);
-
     // let d = (a + b) * c;
 
     // Instantiate the circuit with the private inputs.
     let circuit = MyCircuit {
         major_code: Value::known(major_code),
-        b: Value::known(b),
-        c: Value::known(c),
+        signature_r: Value::known(Fp::from_u128(111)),
+        signature_s: Value::known(Fp::from_u128(222)),
+        message: Value::known(Fp::random(rng)),
     };
 
     {
-        let public_inputs = vec![Fp::from_u128(245), b];
+        let public_inputs = vec![Fp::from_u128(245), Fp::from_u128(65535)];
 
         // 증명 파라미터 생성
         let params: Params<EqAffine> = Params::new(k);

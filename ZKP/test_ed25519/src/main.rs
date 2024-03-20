@@ -17,10 +17,19 @@ fn main() {
     let message: &[u8] = b"This is a test of the tsunami alert system.";
     let signature: Signature = signing_key.sign(message);
 
-    println!("signature: {:?}", signature);
+    println!("signature r bytes: {:?}", signature.r_bytes());
+    println!("signature s bytes: {:?}", signature.s_bytes());
 
     /// verification
     assert!(signing_key.verify(message, &signature).is_ok());
+
+    {
+        let test: Signature =
+            Signature::from_components(signature.r_bytes().clone(), signature.s_bytes().clone());
+
+        println!("111: {:?}", signature);
+        println!("222: {:?}", test);
+    }
 
     // // serialization
     // use ed25519_dalek::VerifyingKey;

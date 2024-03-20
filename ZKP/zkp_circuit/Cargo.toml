@@ -18,3 +18,5 @@ web-sys = { version = "0.3", features = ["Request", "Window", "Response"] }
 wasm-bindgen-futures = "0.4"
 js-sys = "0.3"
 wasm-bindgen = { version = "0.2.81", features = ["serde-serialize"]}
+
+sha2="0.9"
