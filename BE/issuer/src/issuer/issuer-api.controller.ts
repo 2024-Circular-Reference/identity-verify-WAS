@@ -37,24 +37,12 @@ export class IssuerAPIController {
     - Message: pnu_uuidv4
   */
 
-  // TODO: Holder에서 호출
+  // Holder에서 호출
   @Post('/generate-proof-value')
   @ApiOperation({
     summary: 'base58 string[64] 형태 Proof Value 생성',
   })
   generateProofValue() {
     return this.issuerAPIService.generateProofValue();
-  }
-
-  // TODO: Holder에서 호출
-  @Get('/verify-proof-value')
-  @ApiOperation({
-    summary: 'Proof Value 검증 후 boolean 반환',
-  })
-  verifyProofValue(
-    @Query('message') message: string,
-    @Query('proofValue') proofValue: string,
-  ) {
-    return this.issuerAPIService.verifyProofValue(message, proofValue);
   }
 }

@@ -33,14 +33,4 @@ export class HolderAPIController {
       data: { issuerPubKey, vc: JSON.stringify(rawVC), message },
     };
   }
-
-  // TODO: 노션 적혀있어서 구현하긴 했는데 이게 뭐지?
-  // Proof Value 검증 요청
-  @Get('/verify-proof')
-  @ApiOperation({
-    summary: 'Proof Value 검증 요청',
-  })
-  async verifyProof(@Query() dto: any) {
-    return await this.holderAPIService.requestVerifyProof(dto);
-  }
 }

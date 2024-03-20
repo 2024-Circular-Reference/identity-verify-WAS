@@ -13,6 +13,9 @@ export class ProofDto {
   @ApiProperty({ description: 'Major code' })
   readonly majorCode: string;
 
+  @ApiProperty({ description: 'Messagee' })
+  readonly message: string;
+
   @ApiProperty({ description: 'Metadata' })
   readonly metadata: { params: {}, vkey: Uint8Array, strategy: Uint8Array };
 }
