@@ -12,8 +12,6 @@ use halo2_proofs::{
     transcript::{Blake2bRead, Blake2bWrite, Challenge255},
 };
 
-mod wasm;
-
 // ANCHOR: field-instructions
 /// A variable representing a number.
 #[derive(Clone)]
@@ -83,7 +81,7 @@ trait MulInstructions<F: Field>: Chip<F> {
 // The top-level config that provides all necessary columns and permutations
 // for the other configs.
 #[derive(Clone, Debug)]
-struct FieldConfig {
+pub struct FieldConfig {
     /// For this chip, we will use two advice columns to implement our instructions.
     /// These are also the columns through which we communicate with other parts of
     /// the circuit.
@@ -426,7 +424,7 @@ impl<F: Field> FieldInstructions<F> for FieldChip<F> {
 /// they won't have any value during key generation. During proving, if any of these
 /// were `Value::unknown()` we would get an error.
 #[derive(Default)]
-struct MyCircuit<F: Field> {
+pub struct MyCircuit<F: Field> {
     major_code: Value<F>,
     //
     signature_r: Value<F>,
@@ -462,7 +460,6 @@ impl<F: Field> Circuit<F> for MyCircuit<F> {
         let field_chip = FieldChip::<F>::construct(config, ());
 
         // Load our private values into the circuit.
-
         let major_code =
             field_chip.load_private(layouter.namespace(|| "load major_code"), self.major_code)?;
 
@@ -576,7 +573,10 @@ fn main() {
 
     // Instantiate the circuit with the private inputs.
     let circuit = MyCircuit {
+        // [1] major code check
         major_code: Value::known(major_code),
+
+        // [2] ed25519 signature check
         signature_r: Value::known(Fp::from_u128(111)),
         signature_s: Value::known(Fp::from_u128(222)),
         message: Value::known(Fp::random(rng)),
