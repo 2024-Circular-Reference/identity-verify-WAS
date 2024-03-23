@@ -20,7 +20,7 @@ export class HolderAPIService {
     return lastValueFrom(
       this.httpService
         .get(url, { params: { stNum, stPwd } })
-        .pipe(map((response) => response.data)),
+        .pipe(map((response) => response?.data)),
     );
   }
 
@@ -31,7 +31,7 @@ export class HolderAPIService {
     return lastValueFrom(
       this.httpService
         .get(url, { params: { stMajorCode, holderPubKey } })
-        .pipe(map((response) => response.data)),
+        .pipe(map((response) => response?.data)),
     );
   }
 
@@ -40,7 +40,7 @@ export class HolderAPIService {
     // TODO: /generate-proof-value launch.env에 추가
     const url = this.configService.get<string>('API_GET_PROOF_VALUE');
     return lastValueFrom(
-      this.httpService.get(url).pipe(map((response) => response.data)),
+      this.httpService.post(url).pipe(map((response) => response?.data)),
     );
   }
 }

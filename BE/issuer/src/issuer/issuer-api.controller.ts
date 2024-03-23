@@ -17,7 +17,7 @@ export class IssuerAPIController {
     summary: 'HOLDER 호출) 사용자 VC 생성 후 블록체인에 키체인 적재',
   })
   async createUserVC(@Query() dto: UserVCDto) {
-    const { uuid, vc } = this.issuerAPIService.createUserVC(dto);
+    const { vc } = this.issuerAPIService.createUserVC(dto);
     const vcString = JSON.stringify(vc);
     const issuerPubKey = await this.issuerAPIService.getIssuerPubKey();
     try {
@@ -26,7 +26,7 @@ export class IssuerAPIController {
     } catch (error) {
       throw new CustomErrorException('Block Chain Load Failed', 500);
     }
-    return { issuerPubKey, vc };
+    return { issuerPubKey, vc: vcString };
   }
 
   /*
