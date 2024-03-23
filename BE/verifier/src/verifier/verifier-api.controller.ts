@@ -16,16 +16,25 @@ export class VerifierAPIController {
     summary: '생성된 Proof를 검증',
   })
   async verifyProof(@Query() dto: ProofDto): Promise<boolean> {
-    const { HolderPubKey, proof, IssuerPubKey, majorCode, message, metadata } =
-      dto;
+    const {
+      HolderPubKey,
+      proof,
+      IssuerPubKey,
+      majorCode,
+      message,
+      params,
+      vkey,
+      strategy,
+    } = dto;
     const verifyResult = this.verifierAPIService.verifyProof(
       proof,
       IssuerPubKey,
       majorCode,
       message,
-      metadata.params,
-      metadata.vkey,
-      metadata.strategy,
+      params,
+      // TODO: 잘 쪼개지는지 테스트 필요
+      Uint8Array.from(vkey.split('').map((letter) => letter.charCodeAt(0))),
+      Uint8Array.from(strategy.split('').map((letter) => letter.charCodeAt(0))),
     );
     if (!verifyResult) return false;
     try {

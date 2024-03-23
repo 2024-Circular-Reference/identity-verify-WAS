@@ -16,6 +16,14 @@ export class ProofDto {
   @ApiProperty({ description: 'Message' })
   readonly message: string;
 
-  @ApiProperty({ description: 'Metadata' })
-  readonly metadata: { params: object; vkey: Uint8Array; strategy: Uint8Array };
+  @ApiProperty({ description: 'Params', type: 'object' })
+  params: object;
+
+  @ApiProperty({ description: 'VKey(Uint8Array -> String)' })
+  vkey: string;
+
+  @ApiProperty({
+    description: 'Strategy(Uint8Array -> String)',
+  })
+  strategy: string;
 }
