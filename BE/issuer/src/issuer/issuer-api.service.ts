@@ -26,17 +26,6 @@ export class IssuerAPIService {
     return { uuid, vc };
   }
 
-  // Service API 호출
-  async saveUserVC(uuid: string, vc: string) {
-    const url = this.configService.get<string>('API_SAVE_USER_VC');
-    await lastValueFrom(
-      this.httpService
-        .post(url, { uuid, vc })
-        .pipe(map((response) => response.data)),
-    );
-    return;
-  }
-
   async loadKeyChain(issuerPubKey: string, vc: string) {
     const contract = await connectToNEARContract();
 
@@ -66,21 +55,15 @@ export class IssuerAPIService {
     // Private Key로 msg를 sign함
     // => Proof Value: 64자리 base58
     const message = `pnu_${uuidv4()}`;
-    return bs58.encode(
-      ed25519.sign(
-        bs58.decode(this.configService.get<string>('ISSUER_PRI_KEY')),
-        Buffer.from(message),
+    return {
+      proofValue: bs58.encode(
+        ed25519.sign(
+          bs58.decode(this.configService.get<string>('ISSUER_PRI_KEY')),
+          Buffer.from(message),
+        ),
       ),
-    );
-  }
-
-  verifyProofValue(message: string, proofValue: string): boolean {
-    // proofValue에 대해 Public Key로 verify
-    return ed25519.verify(
-      bs58.decode(this.configService.get<string>('ISSUER_PUB_KEY')),
-      Buffer.from(message),
-      bs58.decode(proofValue),
-    );
+      message,
+    };
   }
 
   async getIssuerPubKey() {

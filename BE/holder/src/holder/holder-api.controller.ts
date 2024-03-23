@@ -20,7 +20,17 @@ export class HolderAPIController {
     if (!stMajorCode) {
       throw new CustomErrorException('User Not Exist', 404);
     }
-    const response = await this.holderAPIService.createUserVC(dto, stMajorCode);
-    return { statusCode: 200, data: response };
+    const { issuerPubKey, vc } = await this.holderAPIService.createUserVC(
+      dto,
+      stMajorCode,
+    );
+    const { proofValue, message } = await this.holderAPIService.getProofValue();
+    const rawVC = JSON.parse(vc);
+    Object.assign(rawVC, { proofValue });
+
+    return {
+      statusCode: 200,
+      data: { issuerPubKey, vc: JSON.stringify(rawVC), message },
+    };
   }
 }

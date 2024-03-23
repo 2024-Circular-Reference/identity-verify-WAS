@@ -34,20 +34,6 @@ export class ServiceAPIController {
     return res.major_code;
   }
 
-  // Issuer에서 호출
-  @Post('save-vc')
-  @ApiOperation({
-    summary: 'ISSUER 호출) Issuer가 생성한 Holder VC를 DB에 저장',
-  })
-  async saveUserVC(@Body() dto: UserVCDto) {
-    try {
-      const { uuid, vc } = dto;
-      return await this.serviceAPIService.saveUserVC(uuid, vc);
-    } catch (error) {
-      throw new CustomErrorException('VC Save Failed', 500);
-    }
-  }
-
   //! Init API
   @Post('init-mock')
   @ApiOperation({

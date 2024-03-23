@@ -1,5 +1,4 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { HolderVCEntity } from '../entity/holder_vc.entity';
 import { ConfigService } from '@nestjs/config';
 import { StudentEntity } from '../entity/student.entity';
 
@@ -12,7 +11,7 @@ export const TypeormConfig = (
   username: configService.get<string>('DB_USERNAME'),
   password: configService.get<string>('DB_PWD'),
   database: 'db',
-  entities: [HolderVCEntity, StudentEntity],
+  entities: [StudentEntity],
   synchronize: false,
   logging: true,
 });

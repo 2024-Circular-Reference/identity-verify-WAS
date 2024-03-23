@@ -17,14 +17,8 @@ export class IssuerAPIController {
     summary: 'HOLDER 호출) 사용자 VC 생성 후 블록체인에 키체인 적재',
   })
   async createUserVC(@Query() dto: UserVCDto) {
-    const { uuid, vc } = this.issuerAPIService.createUserVC(dto);
+    const { vc } = this.issuerAPIService.createUserVC(dto);
     const vcString = JSON.stringify(vc);
-    try {
-      // DB에 VC 저장
-      await this.issuerAPIService.saveUserVC(uuid, vcString);
-    } catch (error) {
-      throw new CustomErrorException('VC Save Failed', 500);
-    }
     const issuerPubKey = await this.issuerAPIService.getIssuerPubKey();
     try {
       // 블록체인에 키 체인 적재
@@ -32,7 +26,7 @@ export class IssuerAPIController {
     } catch (error) {
       throw new CustomErrorException('Block Chain Load Failed', 500);
     }
-    return { issuerPubKey, vc };
+    return { issuerPubKey, vc: vcString };
   }
 
   /*
@@ -43,24 +37,12 @@ export class IssuerAPIController {
     - Message: pnu_uuidv4
   */
 
-  // TODO: Holder에서 호출
+  // Holder에서 호출
   @Post('/generate-proof-value')
   @ApiOperation({
     summary: 'base58 string[64] 형태 Proof Value 생성',
   })
   generateProofValue() {
     return this.issuerAPIService.generateProofValue();
-  }
-
-  // TODO: Holder에서 호출
-  @Get('/verify-proof-value')
-  @ApiOperation({
-    summary: 'Proof Value 검증 후 boolean 반환',
-  })
-  verifyProofValue(
-    @Query('message') message: string,
-    @Query('proofValue') proofValue: string,
-  ) {
-    return this.issuerAPIService.verifyProofValue(message, proofValue);
   }
 }
